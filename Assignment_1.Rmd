@@ -1,0 +1,49 @@
+---
+title: "Assignment_1"
+author: "Brody Coyne"
+date: "2022-09-08"
+output:
+  html_document: default
+  pdf_document: default
+---
+I got my data set from ourworldindata.org and it was under the section titled "Financing Healthcare". The title of the specific data set is titled "Health expenditure per person, 2019". It measures the sum of public and private annual health expenditure per person, measured in international-$.
+
+```{r }
+mydata <- read.csv("annual-healthcare-expenditure-per-capita.csv")
+View(mydata)
+```
+
+Descriptive Statistics+Tranforming Data
+-I first transformed a qualitative piece of data by renaming the column header to a more concise name.
+-I then printed out some descriptive and summary statistics to help me better understand the data. I discovered values like the mean and median. I also found out the max value of health expenditure per person, which occurred in the United States in 2019.
+
+```{r}
+colnames(mydata)[colnames(mydata) == "Indicator.Current.health.expenditure..CHE..per.capita.in.PPP.int."] <- "Expenditure"
+head(mydata)
+mean(mydata$Expenditure)
+median(mydata$Expenditure)
+max(mydata$Expenditure)
+which.max(mydata$Expenditure)
+mydata[3788,]
+```
+Plotting variables
+-I created a histogram to show the frequency of total healthcare expenditure in each year for all of the countries listed.
+
+```{r}
+hist(mydata$Expenditure)
+```
+
+Scatter plot
+-I created a scatter plot that plots each years healthcare expenditure and separates them out by year. This creates an interesting dynamic because you can see that healthcare spending generally goes up by year, even though you can't see specific countries.
+
+```{r}
+plot(x = mydata$Expenditure, y = mydata$Year)
+```
+
+Transforming Data
+-I decided to transform a piece of quantitative data by changing the first expenditure in the list to "NA." I did this step last so that the previous summary statistics and graphs would not be affected.
+
+```{r}
+mydata[1,4]<-NA
+head(mydata)
+```
