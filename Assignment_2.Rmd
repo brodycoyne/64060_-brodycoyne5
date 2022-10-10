@@ -1,0 +1,104 @@
+---
+title: "Assignment 2"
+author: "Brody Coyne"
+date: "2022-10-03"
+output:
+  pdf_document: default
+  html_document: default
+---
+Importing the data and showing the first 6 rows.
+```{r }
+mydata<-read.csv("UniversalBank.csv")
+head(mydata)
+```
+Changing the data from a class to a factor, adding a dummy variable for education, and getting rid of the ID and zipcode columns.
+```{r}
+q<-class2ind(as.factor(mydata$Education))
+colnames(q) <- c('Edu1','Edu2','Ed3')
+new_mydata<-cbind(mydata[,2:4],mydata[,6:7],q,mydata[9],mydata[,11:14],mydata[10])
+```
+
+-
+Partitioning the data in a 60/40 split between training and validation sets.
+```{r }
+Index_Train<-createDataPartition(new_mydata$Personal.Loan, p=0.6, list = FALSE)
+Train <-new_mydata[Index_Train,]
+Validation <-new_mydata[-Index_Train,]
+```
+-
+
+Seperating the labels from the predictors
+```{r}
+Train_Predictors<-Train[,1:13]
+Validation_Predictors<-Validation[,1:13]
+Train_labels <-Train[,14]
+Validation_labels <-Validation[,14]
+```
+
+Importing the customer data that needs to analyzed so the customer can be classified.
+```{r}
+Customer_Data <- data.frame(Age=40 , Experience=10, Income = 84, Family = 2, CCAvg = 2, Education_1 = 0, Education_2 = 1, Education_3 = 0, Mortgage = 0, Securities.Account = 0, CD.Account = 0, Online = 1,  CreditCard = 1, stringsAsFactors = FALSE)
+```
+
+
+Finding the knn at k=1
+```{r}
+Predicted_Train_labels <-knn(Train_Predictors, Validation_Predictors, cl=Train_labels, k=1)
+head(Predicted_Train_labels)
+```
+
+Finding the best knn. I chose k=9 as the best value here because it has the highest accuracy rate.
+```{r}
+new_mydata$Personal.Loan = factor(new_mydata$Personal.Loan)
+set.seed(123)
+model<-train(Personal.Loan~ ., data = new_mydata, method="knn")
+model
+```
+Finding the knn at the value I chose, k=9.
+```{r}
+Predicted_Validation_labels<-knn(Validation_Predictors,Train_Predictors, cl=Validation_labels, k=9)
+head(Predicted_Validation_labels)
+```
+
+Created a confusion matrix using the best k value. I would say that the model performed okay because only 176 cases out of the 2000 total cases were misclassified.
+```{r}
+CrossTable(x=Validation_labels, y=Predicted_Train_labels, prop.chisq = FALSE)
+```
+
+Using the specific customer mentioned in the instructions and using k=1 to test if that customer will accept the loan offer or not. Based on the reponse being 0 it is predicted that they will not accept the loan.
+```{r}
+Predicted_Customer<-knn(Train_Predictors,Customer_Data, cl=Train_labels, k=1)
+head(Predicted_Customer)
+```
+
+Using the information for the same customer but this time using k=9. This also predicts that the customer will not accept the loan offer.
+```{r}
+Predicted_Customer<-knn(Train_Predictors,Customer_Data, cl=Train_labels, k=9)
+head(Predicted_Customer)
+```
+
+Repartitioning the data in a 50/30/20 split between training, validation, and testing data. This leaves 2500 observations in Train1, 1500 observations in Validation1, and 1000 observations in Test1.
+```{r}
+Index_Train1<-createDataPartition(new_mydata$Personal.Loan, p=0.5, list = FALSE)
+Train1 <-new_mydata[Index_Train1,]
+ValidationandTest <-new_mydata[-Index_Train1,]
+Index_Train2<-createDataPartition(ValidationandTest$Personal.Loan,p=0.6, list = FALSE)
+Validation1 <-ValidationandTest[Index_Train2,]
+Test1 <-ValidationandTest[-Index_Train2,]
+```
+
+After repartitioning the data I had to set the variables up so that I could make another confusion matrix.
+```{r}
+Train_Predictors1<-Train[,1:13]
+Test_Predictors1<-Validation[,1:13]
+Train_labels1 <-Train[,14]
+Test_labels1 <-Validation[,14]
+Predicted_Test_labels1<-knn(Train_Predictors1,Test_Predictors1,cl=Train_labels1,k=9)
+head(Predicted_Test_labels1)
+```
+
+Making a new confusion matrix with the repartitioned data. It is pretty similar to the one created earlier except it performed marginally better due to ther being only 164 cases being misclassified. I think that it performed a bit better due to there being more data to learn from.
+```{r}
+CrossTable(x=Test_labels1, y=Predicted_Test_labels1, prop.chisq = FALSE)
+```
+
