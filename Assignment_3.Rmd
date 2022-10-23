@@ -1,0 +1,42 @@
+---
+title: "Assignment 3"
+author: "Brody Coyne"
+date: "2022-10-22"
+output:
+  pdf_document: default
+  html_document: default
+---
+Load all of the packages
+```{r }
+library(base)
+library(caret)
+library(knitr)
+library(class)
+library(rmarkdown)
+library(gmodels)
+library(tinytex)
+library(e1071)
+```
+
+Import all of the data and show the first few rows.
+```{r}
+UBdata<-read.csv("UniversalBank.csv")
+head(UBdata)
+```
+
+Partitioning the data.
+```{r}
+set.seed(123)
+Index_Train<-createDataPartition(UBdata$Online, p=0.6, list = FALSE)
+Train<-UBdata[Index_Train,]
+Test<-UBdata[-Index_Train,]
+```
+
+Computing the naive Bayes probability for the data to answer question G for the assignment.
+```{r}
+nb_train = Train[,c(10,13:14)]
+nb_test = Test[,c(10,13:14)]
+nb = naiveBayes(Personal.Loan~.,data=nb_train)
+nb
+```
+
