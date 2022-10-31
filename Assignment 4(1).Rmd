@@ -1,0 +1,53 @@
+---
+title: "Assignment 4"
+author: "Brody Coyne"
+date: "2022-10-31"
+output:
+  pdf_document: default
+  html_document: default
+---
+```{r}
+library(tidyverse)
+library(factoextra)
+
+```
+
+
+Importing the Pharmaceutical data and displaying the first few rows of that data
+```{r }
+mydata<-read.csv("Pharmaceuticals.csv")
+head(mydata)
+set.seed(123)
+```
+
+I took out the 9 numerical values from the Pharmaceutical data and then I calculated the optimal number of clusters. I decided to use the silhouette method because it gives an exact number for the optimal number of clusters, which in this case is 5. I also scaled the data so that all of the data would be normalized.
+```{r}
+cluster<-mydata[3:11]
+cluster<-scale(cluster)
+fviz_nbclust(cluster, kmeans, method = "silhouette")
+```
+
+I then used kmeans to create 5 clusters based of all of the numerical data. Due to the fact that it is a relatively small data set, I thought that using 25 for the nstart value would be high enough.
+```{r}
+k5<-kmeans(cluster, centers = 5, nstart = 25)
+fviz_cluster(k5, data = cluster)
+```
+
+Then I checked the centers of the clusters as well as the size of the clusters.
+```{r}
+k5$centers
+k5$size
+```
+
+The first cluster is the largest with 8 firms in it. I noticed that they are all traded on the NYSE and all either from the US or UK except for one from Switzerland.
+
+The second cluster has firms that are pretty different. They are all traded on different exchanges but they are similar in the fact that there are two holds and one moderately buy.
+
+The third cluster only has 2 firms and I would say that the categorical variables are pretty different. The only similarities are that they are both traded on the NYSE.
+
+The fourth cluster likely has the most similar firms with most of them being US based and traded on the NYSE.
+
+The fifth cluster is relatively different based on the firms with only half of the firms sharing the fact that they are US based and traded on the NYSE.
+
+
+Based on only the 3 non-numerical variables that I looked at to compare the clusters, there seemed to not be many similarities. However, those three variables don't provide much insight into the company as a whole which means I would have to look into the firms on a deeper level to really test the effectiveness of the clustering.
