@@ -1,0 +1,87 @@
+---
+title: "Assignment 5"
+author: "Brody Coyne"
+date: "2022-11-15"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r }
+library(cluster)
+library(stats)
+library(factoextra)
+```
+
+Importing the csv file, pulling out ony the numerical data, getting rid of the missing data, and then normalizing the data. The data should be normalized because the weights of the data points are arbitrary and would have to be weighted manually to be useful.
+```{r}
+cereals<-read.csv("cereals.csv")
+numericaldata = data.frame(cereals[,4:16])
+OmitMissing = na.omit(numericaldata)
+Normalize = scale(OmitMissing)
+```
+
+Using the normalized data to do heirarchical clustering.
+```{r}
+distance<-dist(Normalize, method = "euclidian")
+clustering_heirarchical = hclust(distance, method = "complete")
+plot(clustering_heirarchical)
+```
+
+Rounding all of the values to 3 decimal places.
+```{r}
+round(clustering_heirarchical$height, 3)
+```
+
+-Using hierarchical clustering and seperating the values into 4 groups.
+```{r}
+plot(clustering_heirarchical)
+rect.hclust(clustering_heirarchical, k = 4, border = "red")
+```
+
+Using agnes to compare the different clustering methods. Because ward's method is the highest value at .90, that means that it is the best of the 4 methods.
+```{r}
+singleCH = agnes(Normalize, method = "single")
+completeCH = agnes(Normalize, method = "complete")
+averageCH = agnes(Normalize, method = "average")
+wardCH = agnes(Normalize, method = "ward")
+print(singleCH$ac)
+print(completeCH$ac)
+print(averageCH$ac)
+print(wardCH$ac)
+```
+
+Using ward's method for clustering.
+```{r}
+pltree(wardCH, cex = 0.6, hang = -1, main = "Dendrogram of agnes")
+```
+
+Using ward's method to cluster the data into 4 subgroups.
+```{r}
+Hcluster1 <- hclust(distance, method = "ward.D2")
+subgrp <- cutree(Hcluster1, k = 4)
+table(subgrp)
+```
+
+A vizualization of the clusters.
+```{r}
+cereals <- as.data.frame(cbind(Normalize, subgrp))
+fviz_cluster(list(data = Normalize, cluster = subgrp))
+```
+
+Adding an extra row to show which clustering group the different cereals are a part of.
+```{r}
+Newcereals = numericaldata
+Newcereals_omit = na.omit(Newcereals)
+Clust = cbind(Newcereals_omit, subgrp)
+Clust[Clust$subgrp==1,]
+```
+
+Finding the average of the rating category for each cluster. This shows that subgroup 1 is significantly higher that the other 3 groups. This means that if an elementary school was looking to choose a cluster for healthy cereals, I would suggest subgroup 1. This subgroup includes 100% Bran, 100% Natural Bran, and All-Bran with Extra Fiber.
+```{r}
+mean(Clust[Clust$subgrp==1, "rating"])
+mean(Clust[Clust$subgrp==2, "rating"])
+mean(Clust[Clust$subgrp==3, "rating"])
+mean(Clust[Clust$subgrp==4, "rating"])
+```
+
